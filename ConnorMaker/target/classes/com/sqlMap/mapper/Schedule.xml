@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Schedule">
+
+	<!-- property = java 변수명 , column = db컬럼명 -->
+	<!-- resultmap에 type는 myBatis Configuration에서 축약해서 정의 member -> spms.vo.Member -->
+<!-- 	<resultMap id="boardList" type="board">
+		<result property="qna_seq" column="QNA_SEQ" />
+		<result property="qna_title" column="QNA_TITLE" />
+		<result property="qna_content" column="QNA_CONTENT" />
+		<result property="qna_refer" column="QNA_REFER" />
+		<result property="qna_step" column="QNA_STEP" />
+		<result property="qna_depth" column="QNA_DEPTH" />
+		<result property="qna_readCount" column="QNA_READCOUNT" />
+		<result property="qna_isDel" column="QNA_ISDEL" />
+		java.sql.Date는 날짜만, java.util.Date는 시분초까지 포함
+		<result property="qna_regDate" column="QNA_REGDATE"
+			javaType="java.util.Date" />
+		<result property="qna_updateDate" column="QNA_UPDATEDATE"
+			javaType="java.util.Date" />
+		<result property="qna_fileName" column="QNA_FILE_NAME" />
+		<result property="qna_fileLocation" column="QNA_FILE_LOCATION" />
+		<result property="mem_id" column="MEM_ID" />
+		<result property="qna_announce" column="QNA_ANNOUNCE" />
+		<result property="level" column="LVL" />
+	</resultMap>
+
+	게시글 전체 갯수
+	<select id="getCount" resultType="int">
+		SELECT count(*)
+		FROM
+		LJP_QNABOARD
+	</select>
+
+	<select id="getSearchCount" parameterType="Map" resultType="int">
+		SELECT count(*)
+		FROM LJP_QNABOARD
+		<choose>
+			검색 옵션이 전체검색일 경우
+			<when test="searchType == 'all'">
+				WHERE MEM_ID like '%'||#{keyword}||'%'
+				OR QNA_CONTENT
+				like '%'||#{keyword}||'%'
+				OR QNA_TITLE like '%'||#{keyword}||'%'
+			</when>
+			전체 검색이 아닐 경우
+			<otherwise>
+				WHERE ${searchType} like '%'||#{keyword}||'%'
+			</otherwise>
+		</choose>
+		ORDER BY QNA_SEQ DESC, QNA_REGDATE DESC
+	</select>
+
+	검색목록 불러오기
+	<select id="getSearchResult" parameterType="Map"
+		resultMap="boardList">
+   <![CDATA[
+	  SELECT * FROM (
+	  SELECT ROWNUM AS RECNUM, LVL, QNA_SEQ, QNA_REFER, 
+	  QNA_TITLE, QNA_READCOUNT, QNA_CONTENT, MEM_ID, QNA_REGDATE, QNA_ISDEL
+	  FROM (
+	  SELECT LEVEL AS LVL, QNA_SEQ, QNA_REFER, 
+	  QNA_TITLE, QNA_READCOUNT, QNA_CONTENT, MEM_ID, QNA_REGDATE, QNA_ISDEL FROM LJP_QNABOARD
+	  START WITH QNA_REFER = 0 
+	  CONNECT BY PRIOR QNA_SEQ = QNA_REFER 
+	  ORDER SIBLINGS BY QNA_SEQ DESC))
+	  WHERE RECNUM BETWEEN (#{section}-1)*100+(#{curPage}-1)*10+1 
+	  AND (#{section}-1)*100+#{curPage}*10
+   ]]>
+		<choose>
+			검색 옵션이 전체검색일 경우
+			<when test="searchType == 'all'">
+				AND MEM_ID like '%'||#{keyword}||'%'
+				OR QNA_CONTENT
+				like '%'||#{keyword}||'%'
+				OR QNA_TITLE like '%'||#{keyword}||'%'
+			</when>
+			전체 검색이 아닐 경우
+			<otherwise>
+				AND ${searchType} like '%'||#{keyword}||'%'
+			</otherwise>
+		</choose>
+	</select>
+
+	게시판 글목록 불러오기
+	<select id="getAllBoard" parameterType="Map"
+		resultMap="boardList">
+   <![CDATA[
+	  SELECT * FROM (
+	  SELECT ROWNUM AS RECNUM, LVL, QNA_SEQ, QNA_REFER, 
+	  QNA_TITLE, QNA_READCOUNT, QNA_CONTENT, MEM_ID, QNA_REGDATE, QNA_ISDEL
+	  FROM (
+	  SELECT LEVEL AS LVL, QNA_SEQ, QNA_REFER, 
+	  QNA_TITLE, QNA_READCOUNT, QNA_CONTENT, MEM_ID, QNA_REGDATE, QNA_ISDEL FROM LJP_QNABOARD
+	  START WITH QNA_REFER = 0 
+	  CONNECT BY PRIOR QNA_SEQ = QNA_REFER
+	  ORDER SIBLINGS BY QNA_SEQ DESC ))
+	  WHERE RECNUM BETWEEN (#{section}-1)*100+(#{curPage}-1)*10+1 
+	  AND (#{section}-1)*100+#{curPage}*10
+   ]]>
+	</select>
+
+	글 작성
+	<insert id="insertBoard" parameterType="board">
+		<choose>
+			<when test="qna_fileName != null">
+				<choose>
+					<when test="qna_refer == null">
+						INSERT INTO LJP_QNABOARD(QNA_SEQ, QNA_TITLE,
+						QNA_FILE_NAME, QNA_CONTENT,
+						MEM_ID)
+						VALUES
+						(LJP_QNABOARD_SEQ.nextval,#{qna_title}, #{qna_fileName},
+						#{qna_content},#{mem_id})
+					</when>
+					<otherwise>
+						INSERT INTO LJP_QNABOARD(QNA_SEQ, QNA_TITLE,
+						QNA_FILE_NAME, QNA_CONTENT,
+						MEM_ID, QNA_REFER)
+						VALUES
+						(LJP_QNABOARD_SEQ.nextval,#{qna_title}, #{qna_fileName},
+						#{qna_content},#{mem_id}, #{qna_refer})
+					</otherwise>
+				</choose>
+			</when>
+			<otherwise>
+				<choose>
+					<when test="qna_refer == null">
+						INSERT INTO LJP_QNABOARD(QNA_SEQ, QNA_TITLE,
+						QNA_CONTENT,
+						MEM_ID)
+						VALUES
+						(LJP_QNABOARD_SEQ.nextval,#{qna_title},
+						#{qna_content},#{mem_id})
+					</when>
+					<otherwise>
+						INSERT INTO LJP_QNABOARD(QNA_SEQ, QNA_TITLE,
+						QNA_CONTENT,
+						MEM_ID, QNA_REFER)
+						VALUES
+						(LJP_QNABOARD_SEQ.nextval,#{qna_title},
+						#{qna_content},#{mem_id}, #{qna_refer})
+					</otherwise>
+				</choose>
+			</otherwise>
+		</choose>
+	</insert>
+
+	답변글 작성(관리자용)
+	<insert id="replyBoard" parameterType="board">
+		INSERT INTO
+		LJP_QNABOARD(QNA_SEQ, QNA_TITLE, QNA_CONTENT, QNA_FILE_NAME,
+		QNA_REFER, MEM_ID)
+		VALUES (LJP_QNABOARD_SEQ.nextval, #{qna_title},
+		#{qna_content},
+		#{qna_fileName}, #{qna_refer}, #{mem_id})
+	</insert>
+
+	글 삭제(isdel 컬럼을 1으로)
+	<delete id="deleteBoard" parameterType="int">
+		UPDATE LJP_QNABOARD SET
+		QNA_ISDEL = 1 WHERE QNA_SEQ IN
+		(SELECT QNA_SEQ FROM LJP_QNABOARD START
+		WITH QNA_SEQ = #{qna_seq}
+		CONNECT BY PRIOR QNA_SEQ = QNA_REFER)
+	</delete>
+
+	글 선택(상세보기)
+	<select id="selectOneBoard" parameterType="int"
+		resultMap="boardList">
+		SELECT QNA_SEQ, QNA_TITLE, QNA_CONTENT, QNA_FILE_NAME,
+		QNA_READCOUNT,
+		QNA_REGDATE, MEM_ID
+		FROM LJP_QNABOARD
+		WHERE QNA_SEQ =
+		#{qna_seq}
+	</select>
+
+	글 수정
+	<update id="updateBoard" parameterType="board">
+		UPDATE LJP_QNABOARD SET
+		QNA_TITLE=#{qna_title}, QNA_CONTENT=#{qna_content},
+		QNA_FILE_NAME=#{qna_fileName},
+		QNA_UPDATEDATE = SYSDATE
+		WHERE QNA_SEQ =
+		#{qna_seq}
+	</update>
+
+	조회수 증가
+	<update id="readcount" parameterType="int">
+		UPDATE LJP_QNABOARD SET
+		QNA_READCOUNT = QNA_READCOUNT + 1 WHERE QNA_SEQ =
+		#{qna_seq}
+	</update>
+
+	다중삭제
+	<delete id="mulDelBoard" parameterType="Map">
+		UPDATE FROM LJP_QNABOARD WHERE QNA_SEQ IN
+		<foreach collection="nos" item="no" open="(" close=")"
+			separator=",">
+			#{qna_seq}
+		</foreach>
+	</delete> -->
+</mapper>
