@@ -5,203 +5,60 @@
 
 <mapper namespace="Schedule">
 
-	<!-- property = java 변수명 , column = db컬럼명 -->
-	<!-- resultmap에 type는 myBatis Configuration에서 축약해서 정의 member -> spms.vo.Member -->
-<!-- 	<resultMap id="boardList" type="board">
-		<result property="qna_seq" column="QNA_SEQ" />
-		<result property="qna_title" column="QNA_TITLE" />
-		<result property="qna_content" column="QNA_CONTENT" />
-		<result property="qna_refer" column="QNA_REFER" />
-		<result property="qna_step" column="QNA_STEP" />
-		<result property="qna_depth" column="QNA_DEPTH" />
-		<result property="qna_readCount" column="QNA_READCOUNT" />
-		<result property="qna_isDel" column="QNA_ISDEL" />
-		java.sql.Date는 날짜만, java.util.Date는 시분초까지 포함
-		<result property="qna_regDate" column="QNA_REGDATE"
-			javaType="java.util.Date" />
-		<result property="qna_updateDate" column="QNA_UPDATEDATE"
-			javaType="java.util.Date" />
-		<result property="qna_fileName" column="QNA_FILE_NAME" />
-		<result property="qna_fileLocation" column="QNA_FILE_LOCATION" />
-		<result property="mem_id" column="MEM_ID" />
-		<result property="qna_announce" column="QNA_ANNOUNCE" />
-		<result property="level" column="LVL" />
+	<!-- property = java 변수명 , column = db컬럼명 -->	
+	<resultMap id="resultScheduleList" type="schedule">
+		<result property="sche_theology" column="sche_theology" />
+		<result property="sche_dark_magic" column="sche_dark_magic" />
+		<result property="sche_art" column="sche_art" />
+		<result property="sche_acting" column="sche_acting" />
+		<result property="sche_sports" column="sche_sports" />
+		<result property="sche_school" column="sche_school" />
+		<result property="sche_dancing" column="sche_dancing" />
+		<result property="sche_church" column="sche_church" />
+		<result property="sche_priest" column="sche_priest" />
+		<result property="sche_mesmerism" column="sche_mesmerism" />
+		<result property="sche_tutoring" column="sche_tutoring" />
+		<result property="sche_etiquette" column="sche_etiquette" />
+		<result property="sche_psychology" column="sche_psychology" />
+		<result property="sche_tussle" column="sche_tussle" />
+		<result property="sche_shooting" column="sche_shooting" />
+		<result property="sche_prestigious_school" column="sche_prestigious_school" />
+		<result property="sche_social_skills" column="sche_social_skills" />
+		<result property="sche_hand_combat" column="sche_hand_combat" />
+		<result property="sche_express_delivery" column="sche_express_delivery" />
+		<result property="sche_convenience" column="sche_convenience" />
+		<result property="sche_housework" column="sche_housework" />
+		<result property="sche_betta_farm" column="sche_betta_farm" />
+		<result property="sche_street_mission" column="sche_street_mission" />
+		<result property="sche_childminder" column="sche_childminder" />
+		<result property="sche_volunteer" column="sche_volunteer" />
+		<result property="sche_puppy_walking" column="sche_puppy_walking" />
+		<result property="sche_extortion" column="sche_extortion" />
+		<result property="sche_graveyard" column="sche_graveyard" />
+		<result property="sche_cat_detective" column="sche_cat_detective" />
+		<result property="sche_seance_helper" column="sche_seance_helper" />
+		<result property="sche_immolator" column="sche_immolator" />
+		<result property="sche_host" column="sche_host" />
+		<result property="sche_bar_serving" column="sche_bar_serving" />
+		<result property="sche_freedom" column="sche_freedom" />
+		<result property="sche_vacation" column="sche_vacation" />
 	</resultMap>
-
-	게시글 전체 갯수
-	<select id="getCount" resultType="int">
-		SELECT count(*)
-		FROM
-		LJP_QNABOARD
+	
+	<!-- 교육 목록 보기 -->
+	<select id="getEduList" resultMap="resultScheduleList">
+		SELECT SCHE_THEOLOGY,SCHE_DARK_MAGIC,SCHE_ART,SCHE_ACTING,SCHE_SPORTS,SCHE_SCHOOL,SCHE_DANCING,SCHE_CHURCH,SCHE_PRIEST,SCHE_MESMERISM,SCHE_TUTORING,SCHE_ETIQUETTE,SCHE_PSYCHOLOGY,SCHE_TUSSLE,SCHE_SHOOTING,SCHE_PRESTIGIOUS_SCHOOL,SCHE_SOCIAL_SKILLS,SCHE_HAND_COMBAT
+		FROM CHAR_SCHEDULE 
 	</select>
-
-	<select id="getSearchCount" parameterType="Map" resultType="int">
-		SELECT count(*)
-		FROM LJP_QNABOARD
-		<choose>
-			검색 옵션이 전체검색일 경우
-			<when test="searchType == 'all'">
-				WHERE MEM_ID like '%'||#{keyword}||'%'
-				OR QNA_CONTENT
-				like '%'||#{keyword}||'%'
-				OR QNA_TITLE like '%'||#{keyword}||'%'
-			</when>
-			전체 검색이 아닐 경우
-			<otherwise>
-				WHERE ${searchType} like '%'||#{keyword}||'%'
-			</otherwise>
-		</choose>
-		ORDER BY QNA_SEQ DESC, QNA_REGDATE DESC
+	
+	<!-- 아르바이트 목록 보기 -->
+	<select id="getPartList" resultMap="resultScheduleList">
+		SELECT SCHE_EXPRESS_DELIVERY,SCHE_CONVENIENCE,SCHE_HOUSEWORK,SCHE_BETTA_FARM,SCHE_STREET_MISSION,SCHE_CHILDMINDER,SCHE_VOLUNTEER,SCHE_PUPPY_WALKING,SCHE_EXTORTION,SCHE_GRAVEYARD,SCHE_CAT_DETECTIVE,SCHE_SEANCE_HELPER,SCHE_IMMOLATOR,SCHE_HOST,SCHE_BAR_SERVING
+		FROM CHAR_SCHEDULE
 	</select>
-
-	검색목록 불러오기
-	<select id="getSearchResult" parameterType="Map"
-		resultMap="boardList">
-   <![CDATA[
-	  SELECT * FROM (
-	  SELECT ROWNUM AS RECNUM, LVL, QNA_SEQ, QNA_REFER, 
-	  QNA_TITLE, QNA_READCOUNT, QNA_CONTENT, MEM_ID, QNA_REGDATE, QNA_ISDEL
-	  FROM (
-	  SELECT LEVEL AS LVL, QNA_SEQ, QNA_REFER, 
-	  QNA_TITLE, QNA_READCOUNT, QNA_CONTENT, MEM_ID, QNA_REGDATE, QNA_ISDEL FROM LJP_QNABOARD
-	  START WITH QNA_REFER = 0 
-	  CONNECT BY PRIOR QNA_SEQ = QNA_REFER 
-	  ORDER SIBLINGS BY QNA_SEQ DESC))
-	  WHERE RECNUM BETWEEN (#{section}-1)*100+(#{curPage}-1)*10+1 
-	  AND (#{section}-1)*100+#{curPage}*10
-   ]]>
-		<choose>
-			검색 옵션이 전체검색일 경우
-			<when test="searchType == 'all'">
-				AND MEM_ID like '%'||#{keyword}||'%'
-				OR QNA_CONTENT
-				like '%'||#{keyword}||'%'
-				OR QNA_TITLE like '%'||#{keyword}||'%'
-			</when>
-			전체 검색이 아닐 경우
-			<otherwise>
-				AND ${searchType} like '%'||#{keyword}||'%'
-			</otherwise>
-		</choose>
+	
+	<!-- 휴식 목록 보기 -->
+	<select id="getFreeList" resultMap="resultScheduleList">
+		SELECT SCHE_FREEDOM,SCHE_VACATION
+		FROM CHAR_SCHEDULE
 	</select>
-
-	게시판 글목록 불러오기
-	<select id="getAllBoard" parameterType="Map"
-		resultMap="boardList">
-   <![CDATA[
-	  SELECT * FROM (
-	  SELECT ROWNUM AS RECNUM, LVL, QNA_SEQ, QNA_REFER, 
-	  QNA_TITLE, QNA_READCOUNT, QNA_CONTENT, MEM_ID, QNA_REGDATE, QNA_ISDEL
-	  FROM (
-	  SELECT LEVEL AS LVL, QNA_SEQ, QNA_REFER, 
-	  QNA_TITLE, QNA_READCOUNT, QNA_CONTENT, MEM_ID, QNA_REGDATE, QNA_ISDEL FROM LJP_QNABOARD
-	  START WITH QNA_REFER = 0 
-	  CONNECT BY PRIOR QNA_SEQ = QNA_REFER
-	  ORDER SIBLINGS BY QNA_SEQ DESC ))
-	  WHERE RECNUM BETWEEN (#{section}-1)*100+(#{curPage}-1)*10+1 
-	  AND (#{section}-1)*100+#{curPage}*10
-   ]]>
-	</select>
-
-	글 작성
-	<insert id="insertBoard" parameterType="board">
-		<choose>
-			<when test="qna_fileName != null">
-				<choose>
-					<when test="qna_refer == null">
-						INSERT INTO LJP_QNABOARD(QNA_SEQ, QNA_TITLE,
-						QNA_FILE_NAME, QNA_CONTENT,
-						MEM_ID)
-						VALUES
-						(LJP_QNABOARD_SEQ.nextval,#{qna_title}, #{qna_fileName},
-						#{qna_content},#{mem_id})
-					</when>
-					<otherwise>
-						INSERT INTO LJP_QNABOARD(QNA_SEQ, QNA_TITLE,
-						QNA_FILE_NAME, QNA_CONTENT,
-						MEM_ID, QNA_REFER)
-						VALUES
-						(LJP_QNABOARD_SEQ.nextval,#{qna_title}, #{qna_fileName},
-						#{qna_content},#{mem_id}, #{qna_refer})
-					</otherwise>
-				</choose>
-			</when>
-			<otherwise>
-				<choose>
-					<when test="qna_refer == null">
-						INSERT INTO LJP_QNABOARD(QNA_SEQ, QNA_TITLE,
-						QNA_CONTENT,
-						MEM_ID)
-						VALUES
-						(LJP_QNABOARD_SEQ.nextval,#{qna_title},
-						#{qna_content},#{mem_id})
-					</when>
-					<otherwise>
-						INSERT INTO LJP_QNABOARD(QNA_SEQ, QNA_TITLE,
-						QNA_CONTENT,
-						MEM_ID, QNA_REFER)
-						VALUES
-						(LJP_QNABOARD_SEQ.nextval,#{qna_title},
-						#{qna_content},#{mem_id}, #{qna_refer})
-					</otherwise>
-				</choose>
-			</otherwise>
-		</choose>
-	</insert>
-
-	답변글 작성(관리자용)
-	<insert id="replyBoard" parameterType="board">
-		INSERT INTO
-		LJP_QNABOARD(QNA_SEQ, QNA_TITLE, QNA_CONTENT, QNA_FILE_NAME,
-		QNA_REFER, MEM_ID)
-		VALUES (LJP_QNABOARD_SEQ.nextval, #{qna_title},
-		#{qna_content},
-		#{qna_fileName}, #{qna_refer}, #{mem_id})
-	</insert>
-
-	글 삭제(isdel 컬럼을 1으로)
-	<delete id="deleteBoard" parameterType="int">
-		UPDATE LJP_QNABOARD SET
-		QNA_ISDEL = 1 WHERE QNA_SEQ IN
-		(SELECT QNA_SEQ FROM LJP_QNABOARD START
-		WITH QNA_SEQ = #{qna_seq}
-		CONNECT BY PRIOR QNA_SEQ = QNA_REFER)
-	</delete>
-
-	글 선택(상세보기)
-	<select id="selectOneBoard" parameterType="int"
-		resultMap="boardList">
-		SELECT QNA_SEQ, QNA_TITLE, QNA_CONTENT, QNA_FILE_NAME,
-		QNA_READCOUNT,
-		QNA_REGDATE, MEM_ID
-		FROM LJP_QNABOARD
-		WHERE QNA_SEQ =
-		#{qna_seq}
-	</select>
-
-	글 수정
-	<update id="updateBoard" parameterType="board">
-		UPDATE LJP_QNABOARD SET
-		QNA_TITLE=#{qna_title}, QNA_CONTENT=#{qna_content},
-		QNA_FILE_NAME=#{qna_fileName},
-		QNA_UPDATEDATE = SYSDATE
-		WHERE QNA_SEQ =
-		#{qna_seq}
-	</update>
-
-	조회수 증가
-	<update id="readcount" parameterType="int">
-		UPDATE LJP_QNABOARD SET
-		QNA_READCOUNT = QNA_READCOUNT + 1 WHERE QNA_SEQ =
-		#{qna_seq}
-	</update>
-
-	다중삭제
-	<delete id="mulDelBoard" parameterType="Map">
-		UPDATE FROM LJP_QNABOARD WHERE QNA_SEQ IN
-		<foreach collection="nos" item="no" open="(" close=")"
-			separator=",">
-			#{qna_seq}
-		</foreach>
-	</delete> -->
 </mapper>
